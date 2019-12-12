@@ -157,4 +157,26 @@ describe('recipe routes', () => {
         });
       });
   });
+
+  it.skip('gets all recipes that include a specific ingredient', async() => {
+    const recipes = await Recipe.create([
+      { name: 'cookies', ingredients: [{ name: 'sugar', measurement: 'cup', amount: 4 }], directions: [] },
+      { name: 'cake', ingredients: [{ name: 'sugar', measurement: 'cup', amount: 4 }], directions: [] },
+      { name: 'pie', ingredients: [{ name: 'flour', measurement: 'cup', amount: 2 }], directions: [] }
+    ]);
+
+    return request(app)
+      .get('/api/v1/recipes?sugar')
+      .then(res => {
+        recipes.forEach(recipe => {
+          expect(res.body).toContainEqual({
+            _id: recipe._id.toString(),
+            name: recipe.name, 
+            ingredients: [{ name: 'sugar', measurement: 'cup', amount: 4 }],
+            directions: [],
+            __v: 0
+          });
+        });
+      });
+  });
 });

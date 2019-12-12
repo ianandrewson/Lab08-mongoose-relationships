@@ -5,6 +5,7 @@ const app = require('../lib/app');
 const connect = require('../lib/utils/connect');
 const mongoose = require('mongoose');
 const Event = require('../lib/models/Event');
+const Recipe = require('../lib/models/Recipe');
 
 describe('event routes', () => {
   beforeAll(() => {
@@ -19,11 +20,16 @@ describe('event routes', () => {
     return mongoose.connection.close();
   });
 
-  it('creates an event', () => {
+  it('creates an event', async() => {
+    const recipe = await Recipe.create({
+      name: 'Oatmeal',
+      ingredients: [],
+      directions: 'make it'
+    });
     return request(app)
       .post('/api/v1/events')
       .send({
-        recipeId: '1234',
+        recipeId: recipe._id,
         dateOfEvent: Date.now(),
         notes: 'It went well',
         rating: 4
@@ -31,7 +37,7 @@ describe('event routes', () => {
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          recipeId: '1234',
+          recipeId: expect.any(String),
           dateOfEvent: expect.any(String),
           notes: 'It went well',
           rating: 4,
@@ -41,11 +47,16 @@ describe('event routes', () => {
   });
 
   it('gets all events', async() => {
+    const recipe = await Recipe.create({
+      name: 'Oatmeal',
+      ingredients: [],
+      directions: 'make it'
+    });
     const events = await Event.create([
-      { recipeId: '1234', dateOfEvent: Date.now(), rating: 3 },
-      { recipeId: '3456', dateOfEvent: Date.now(), rating: 2 },
-      { recipeId: '2345', dateOfEvent: Date.now(), rating: 3 },
-      { recipeId: '6544', dateOfEvent: Date.now(), rating: 5 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), rating: 3 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), rating: 2 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), rating: 3 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), rating: 5 },
     ]);
 
     return request(app)

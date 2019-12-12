@@ -5,6 +5,7 @@ const app = require('../lib/app');
 const connect = require('../lib/utils/connect');
 const mongoose = require('mongoose');
 const Recipe = require('../lib/models/Recipe');
+const Event = require('../lib/models/Event');
 
 describe('recipe routes', () => {
   beforeAll(() => {
@@ -13,6 +14,21 @@ describe('recipe routes', () => {
 
   beforeEach(() => {
     return mongoose.connection.dropDatabase();
+  });
+
+  let recipe;
+  let events;
+  beforeEach(async() => {
+    recipe = await Recipe.create({
+      name: 'Oatmeal',
+      ingredients: [],
+      directions: 'make it'
+    });
+    events = await Event.create([
+      { recipeId: recipe._id, dateOfEvent: Date.now(), notes:'Good oatmeal', rating: 4 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), notes:'Ew, runny oatmeal', rating: 1 },
+      { recipeId: recipe._id, dateOfEvent: Date.now(), notes:'Best oatmeal, added sugar', rating: 5 }
+    ]);
   });
 
   afterAll(() => {
@@ -72,35 +88,20 @@ describe('recipe routes', () => {
   });
 
   it('gets a recipe by id', async() => {
-    const recipe = await Recipe.create({
-      name: 'cookies',
-      ingredients: [
-        { name: 'flour', amount: 1, measurement: 'cup' }
-      ],
-      directions: [
-        'preheat oven to 375',
-        'mix ingredients',
-        'put dough on cookie sheet',
-        'bake for 10 minutes'
-      ],
-    });
-
     return request(app)
       .get(`/api/v1/recipes/${recipe._id}`)
       .then(res => {
-        expect(res.body).toEqual({
-          _id: expect.any(String),
-          name: 'cookies',
-          ingredients: [
-            { _id: expect.any(String), name: 'flour', amount: 1, measurement: 'cup' }
-          ],
-          directions: [
-            'preheat oven to 375',
-            'mix ingredients',
-            'put dough on cookie sheet',
-            'bake for 10 minutes'
-          ],
-          __v: 0
+        console.log(res.body);
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            _id: expect.any(String),
+            name: 'Oatmeal',
+            ingredients: [],
+            directions: ['make it'],
+            __v: 0
+          }));
+        events.forEach(event => {
+          expect(res.body.events).toContainEqual(JSON.parse(JSON.stringify(event)));
         });
       });
   });

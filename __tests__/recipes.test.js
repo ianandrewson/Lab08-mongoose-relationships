@@ -91,7 +91,6 @@ describe('recipe routes', () => {
     return request(app)
       .get(`/api/v1/recipes/${recipe._id}`)
       .then(res => {
-        console.log(res.body);
         expect(res.body).toEqual(
           expect.objectContaining({
             _id: expect.any(String),
@@ -142,35 +141,19 @@ describe('recipe routes', () => {
   });
 
   it('deletes a recipe by id', async() => {
-    const recipe = await Recipe.create({
-      name: 'cookies',
-      ingredients: [
-        { name: 'flour', amount: 1, measurement: 'cup' }
-      ],
-      directions: [
-        'preheat oven to 375',
-        'mix ingredients',
-        'put dough on cookie sheet',
-        'bake for 10 minutes'
-      ],
-    });
-
     return request(app)
       .delete(`/api/v1/recipes/${recipe._id}`)
       .then(res => {
-        expect(res.body).toEqual({
-          _id: expect.any(String),
-          name: 'cookies',
-          ingredients: [
-            { _id: expect.any(String), name: 'flour', amount: 1, measurement: 'cup' }
-          ],
-          directions: [
-            'preheat oven to 375',
-            'mix ingredients',
-            'put dough on cookie sheet',
-            'bake for 10 minutes'
-          ],
-          __v: 0
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            _id: expect.any(String),
+            name: 'Oatmeal',
+            ingredients: [],
+            directions: ['make it'],
+            __v: 0
+          }));
+        events.forEach(event => {
+          expect(res.body.events).toContainEqual(JSON.parse(JSON.stringify(event)));
         });
       });
   });
